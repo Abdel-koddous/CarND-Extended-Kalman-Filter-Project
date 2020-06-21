@@ -68,6 +68,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       // TODO: Initialize state.
+      ekf_.x_[0] = measurement_pack.raw_measurements_[0]; // px
+      ekf_.x_[1] = measurement_pack.raw_measurements_[1]; // py
+
 
     }
 
