@@ -64,6 +64,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // TODO: Convert radar from polar to cartesian coordinates 
       //         and initialize state.
+      float rho = measurement_pack.raw_measurements_[0];
+      float phi = measurement_pack.raw_measurements_[1];
+      ekf_.x_[0] = rho*cos(phi); // px
+      ekf_.x_[1] = rho*sin(phi); // py
 
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
@@ -90,6 +94,29 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
    */
 
+  // Update the state transition matrix F
+  float dt = measurement_pack.timestamp_ - previous_timestamp_;
+  ekf_.F_(0, 2) = dt;
+  ekf_.F_(1, 3) = dt;
+
+  // Update the process noise covariance matrix Q
+  MatrixXd G = MatrixXd(4, 2);
+  MatrixXd a = MatrixXd(2, 2);
+  float noise_ax = 9, noise_ay = 9;
+
+  G << dt*dt/2, 0,
+       0, dt*dt/2,
+       dt, 0,
+       0, dt;
+
+  MatrixXd Gt = G.transpose();
+
+  a << noise_ax, 0,
+       0, noise_ay;
+     
+  ekf_.Q_ = G*a*Gt;
+
+
   ekf_.Predict();
 
   /**
@@ -104,9 +131,11 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // TODO: Radar updates
+    ekf_.UpdateEKF( measurement_pack.raw_measurements_ );
 
   } else {
     // TODO: Laser updates
+    ekf_.Update( measurement_pack.raw_measurements_ );
 
   }
 
