@@ -16,38 +16,64 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   /**
    * TODO: Calculate the RMSE here.
    */
+  //_cout << "Computing RMSE" << endl;
   VectorXd rmse(4);
 
+  rmse << 0,0,0,0;
 
+  if ( estimations.size() != ground_truth.size() && estimations.size() == 0){
+      cout << "Estimations and Ground truth vectors size should be equal and not equal to zero" << endl;
+      return rmse;
+  }
 
+  for (uint i=0; i < estimations.size(); ++i) {
+
+    VectorXd residual = estimations[i] - ground_truth[i];
+
+    residual = residual.array()*residual.array();
+
+    rmse += residual;
+
+  }
+
+  // calculate the mean of the error
+  rmse = rmse*1/estimations.size();
+
+  // calculate the squared root of the accumulated error
+  rmse = rmse.array().sqrt();
+  //_cout << "Computing RMSE ... DONE " << rmse << endl;
   return rmse;
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
+
   /**
    * TODO:
    * Calculate a Jacobian here.
    */
    // Compute the Jacobian matrix of h(x')
-  MatrixXd Hj(3, 4);
+   //_ cout << "Let's compute the Jacobian " << x_state.size() << endl;
+   MatrixXd Hj(3, 4);
 
-  float px = x_state(0);
-  float py = x_state(1);
-  float vx = x_state(2);
-  float vy = x_state(3);
+   float px = x_state(0);
+   float py = x_state(1);
+   float vx = x_state(2);
+   float vy = x_state(3);
 
-  float rho = sqrt( px*px + py*py );
-  float rho2 = rho*rho;
-  float rho3 = rho*rho2;
+   float rho = sqrt( px*px + py*py );
+   float rho2 = rho*rho;
+   float rho3 = rho*rho2;
 
-  if (rho == 0){
+   if ( fabs(rho) < 0.0001 ){
       cout << "px and py are Null" << endl;
       return Hj;
-  }
+   }
 
-  Hj << px/rho, py/rho, 0, 0,
-        -py/rho2, px/rho2, 0, 0,
-        py*(vx*py - vy*px)/rho3, px*(vy*px - vx*py)/rho3, px/rho, py/rho;
+   Hj << px/rho, py/rho, 0, 0,
+         -py/rho2, px/rho2, 0, 0,
+         py*(vx*py - vy*px)/rho3, px*(vy*px - vx*py)/rho3, px/rho, py/rho;
+
+   //_ cout << "Done" << endl;
 
    return Hj;
 }

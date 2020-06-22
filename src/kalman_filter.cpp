@@ -1,5 +1,6 @@
 #include "kalman_filter.h"
 #include "tools.h"
+#include "FusionEKF.h"
 #include <iostream>
 
 using Eigen::MatrixXd;
@@ -43,21 +44,23 @@ void KalmanFilter::Update(const VectorXd &z) {
   MatrixXd K = P_*H_.transpose()*S.inverse(); // Kalman gain
 
   x_ = x_ +  K*error_y;
-  P_ = ( MatrixXd::Identity(2, 2) - K*H_ )*P_;
+  P_ = ( MatrixXd::Identity(4, 4) - K*H_ )*P_;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   /**
    * TODO: update the state by using Extended Kalman Filter equations
    */
+                                                  
+  //_cout << "UpdateEKF: " << endl;
 
-  Tools my_tools_obj;
-  MatrixXd Hj = my_tools_obj.CalculateJacobian(x_);
   // Use Jacobian in the linearization of h(x')
-  VectorXd error_y = z - Hj*x_;
+  VectorXd error_y = z - H_*x_;
+  //_cout << "Done updating EKF " << endl;
+
   MatrixXd S = H_*P_*H_.transpose() + R_;
   MatrixXd K = P_*H_.transpose()*S.inverse(); // Kalman gain
 
   x_ = x_ +  K*error_y;
-  P_ = ( MatrixXd::Identity(2, 2) - K*H_ )*P_;
+  P_ = ( MatrixXd::Identity(4, 4) - K*H_ )*P_;
 }
