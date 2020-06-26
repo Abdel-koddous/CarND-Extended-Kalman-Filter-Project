@@ -64,7 +64,7 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
    float rho2 = rho*rho;
    float rho3 = rho*rho2;
 
-   if ( fabs(rho) < 0.0001 ){
+   if ( fabs(rho3) < 0.001 ){
       cout << "px and py are Null" << endl;
       return Hj;
    }

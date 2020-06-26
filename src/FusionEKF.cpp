@@ -48,11 +48,7 @@ FusionEKF::FusionEKF() {
             0, 0, 0, 1;
   
   // intial state covariance matrix
-  ekf_.P_ = MatrixXd(4, 4);
-  ekf_.P_ << 1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1000, 0,  // large initial uncertainty over vx and vy
-            0, 0, 0, 1000;
+
   // Hj_ = tools.CalculateJacobian(ekf_.x_);
 
 
@@ -77,7 +73,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     // first measurement
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
-    ekf_.x_ << 1, 1, 1, 1;
+    ekf_.x_ << 0, 0, 0, 0;
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // TODO: Convert radar from polar to cartesian coordinates 
@@ -95,9 +91,18 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
 
     }
-
+    // create the covariance matrix
+    ekf_.P_ = MatrixXd(4, 4);
+    ekf_.P_ << 1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1000, 0,  // large initial uncertainty over vx and vy
+            0, 0, 0, 1000;
+    //_ update the previous timestamp
+    previous_timestamp_ = measurement_pack.timestamp_;
     // done initializing, no need to predict or update
     is_initialized_ = true;
+    cout << "x_ = " << ekf_.x_ << endl;
+    cout << "P_ = " << ekf_.P_ << endl;
     cout << "Initialization DONE" << endl;
     return;
   }
@@ -114,10 +119,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    */
 
   // Update the state transition matrix F
-  float dt = measurement_pack.timestamp_ - previous_timestamp_;
+  float dt = ( measurement_pack.timestamp_ - previous_timestamp_ ) / 1000000.0; // converted it to seconds
+  cout << "previous_timestamp_ = " << previous_timestamp_ << endl;
   ekf_.F_(0, 2) = dt;
   ekf_.F_(1, 3) = dt;
-
+  //_ update previous timestamp
+  previous_timestamp_ = measurement_pack.timestamp_;
+  //cout << "dt = " << dt << endl; 
   // Update the process noise covariance matrix Q
   MatrixXd G = MatrixXd(4, 2);
   MatrixXd a = MatrixXd(2, 2);
@@ -157,7 +165,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.H_ = Hj_;
     ekf_.R_ = R_radar_;
 
-    cout << "Radar Update: " << endl;
+    //cout << "Radar Update: " << endl;
 
     ekf_.UpdateEKF( measurement_pack.raw_measurements_ );
 
@@ -167,13 +175,16 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.H_ = H_laser_;
     ekf_.R_ = R_laser_;
 
-    cout << "Lidar Update: " << endl;
+    //cout << "Lidar Update: " << endl;
 
     ekf_.Update( measurement_pack.raw_measurements_ );
 
   }
 
+  int print_output = 0;
   // print the output
+  if (print_output){
   cout << "x_ = " << ekf_.x_ << endl;
   cout << "P_ = " << ekf_.P_ << endl;
+  }
 }

@@ -33,13 +33,16 @@ void KalmanFilter::Predict() {
    */
   x_ = F_*x_;
   P_ = F_*P_*F_.transpose() + Q_;
+
+  //cout << "x = " << x_ << endl;
+  //cout << "P = " << P_ << endl;
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
   /**
    * TODO: update the state by using Kalman Filter equations
    */
-  int debug = 1;
+  int debug = 0;
 
   VectorXd error_y = z - H_*x_;
   MatrixXd S = H_*P_*H_.transpose() + R_;
@@ -63,7 +66,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
    */
                                                   
   //_cout << "UpdateEKF: " << endl;
-  int debug = 1;
+  int debug = 0;
 
   // Use Jacobian in the linearization of h(x')
   // convert to polar space (might be added as a method under Tools class)
@@ -100,6 +103,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
 
   if (debug){
+  cout << "px = " << px << " py = " << py << endl;   
   cout << "z = " << z << endl;   
   cout << "x_polar = " << x_ploar << endl;   
   cout << "error_y = " << error_y << endl;   
