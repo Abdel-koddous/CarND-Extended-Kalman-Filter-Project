@@ -27,6 +27,11 @@ class Tools {
    */
   Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd& x_state);
 
+  /**
+   * A helper method to convert cartesian coordinates to polar space
+   */
+  Eigen::VectorXd ToPolarSpace(const Eigen::VectorXd& x_state); 
+
 };
 
 #endif  // TOOLS_H_

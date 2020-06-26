@@ -47,9 +47,8 @@ FusionEKF::FusionEKF() {
             0, 0, 1, 0,
             0, 0, 0, 1;
   
-  // intial state covariance matrix
-
-  // Hj_ = tools.CalculateJacobian(ekf_.x_);
+  // debug information
+  ekf_.debug_ = 0;
 
 
 }

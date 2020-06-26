@@ -77,3 +77,29 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
 
    return Hj;
 }
+
+
+VectorXd Tools::ToPolarSpace(const Eigen::VectorXd& x_state) {
+
+  VectorXd x_polar(3);
+
+  float px = x_state(0);
+  float py = x_state(1);
+  float vx = x_state(2);
+  float vy = x_state(3);
+
+  float rho = sqrt( px*px + py*py );
+
+  if (fabs(rho) < 0.001){
+    cout << "Error -  rho is equal to Zero" << endl;
+    return x_polar;
+  }
+
+  float phi = atan2(py, px);
+  float rho_dot = (px*vx + py*vy)/rho;
+    
+  x_polar << rho, phi, rho_dot;
+
+  return x_polar;
+
+}

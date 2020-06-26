@@ -139,11 +139,12 @@ int main() {
           auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
           // std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-
+          /*
           if ( RMSE(1)  >= 0.5){
+            // used this in early stages to capture some obvious issues with the eKF filter output
             std::cout << " ########################### The (py) RMSE is way off here ####################### " << std::endl;
             return 0;
-          } 
+          } */
 
         }  // end "telemetry" if
 

@@ -31,14 +31,13 @@ void KalmanFilter::Predict() {
   /**
    * TODO: predict the state
    */
-  int debug = 0;
-
+  
   x_ = F_*x_;
   P_ = F_*P_*F_.transpose() + Q_;
 
-  if (debug){
-  cout << "x = " << x_ << endl;
-  cout << "P = " << P_ << endl;
+  if ( debug_ ) {
+    cout << "prediction step - x = " << x_ << endl;
+    cout << "prediction step - P = " << P_ << endl;
   }
 }
 
@@ -46,21 +45,20 @@ void KalmanFilter::Update(const VectorXd &z) {
   /**
    * TODO: update the state by using Kalman Filter equations
    */
-  int debug = 1;
 
   VectorXd error_y = z - H_*x_;
   MatrixXd S = H_*P_*H_.transpose() + R_;
   MatrixXd K = P_*H_.transpose()*S.inverse(); // Kalman gain
 
-
+  // filter output
   x_ = x_ +  K*error_y;
   P_ = ( MatrixXd::Identity(4, 4) - K*H_ )*P_;
 
-  if (debug){
-  cout << "error_y = " << error_y << endl;   
-  cout << "H_ = " << H_ << endl;
-  cout << "S = " << S << endl;
-  cout << "K = " << K << endl;
+  if (debug_) {
+    cout << "error_y = " << error_y << endl;   
+    cout << "H_ = " << H_ << endl;
+    cout << "S = " << S << endl;
+    cout << "K = " << K << endl;
   }
 }
 
@@ -69,33 +67,12 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
    * TODO: update the state by using Extended Kalman Filter equations
    */
                                                   
-  //_cout << "UpdateEKF: " << endl;
-  int debug = 1;
-
-  // Use Jacobian in the linearization of h(x')
-  // convert to polar space (might be added as a method under Tools class)
-  float px = x_(0);
-  float py = x_(1);
-  float vx = x_(2);
-  float vy = x_(3);
-
-  float rho = sqrt( px*px + py*py );
-  float phi = atan2(py, px);
-  if (fabs(px) < 0.001){
-    cout << "Watch out px is Null" << endl;
-  }
-
-  float rho_dot = (px*vx + py*vy)/rho;
-  
-
-  
-  VectorXd x_ploar(3);
-  x_ploar << rho, phi, rho_dot;
-
-
+  // convert to polar space (might be added as a method under Tools class ... I just did!)
+  VectorXd x_ploar = tools_.ToPolarSpace(x_);
   
   VectorXd error_y = z - x_ploar;
 
+  // Bring error in phi back to interval [-pi, pi] 
   while (error_y(1) > M_PI){
     error_y(1) -= 2*M_PI;
   }
@@ -103,22 +80,22 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     error_y(1) += 2*M_PI;
   }
 
-  //cout << "Done updating EKF " << endl;
-
   MatrixXd S = H_*P_*H_.transpose() + R_;
   MatrixXd K = P_*H_.transpose()*S.inverse(); // Kalman gain
 
-
-  if (debug){
-  cout << "px = " << px << " py = " << py << endl;   
-  cout << "z = " << z << endl;   
-  cout << "x_polar = " << x_ploar << endl;   
-  cout << "error_y = " << error_y << endl;   
-  cout << "H_ = " << H_ << endl;
-  cout << "S = " << S << endl;
-  cout << "K = " << K << endl;
-  }
-
+  // filter output
   x_ = x_ +  K*error_y;
   P_ = ( MatrixXd::Identity(4, 4) - K*H_ )*P_;
+
+
+
+  if (debug_) {
+    cout << "z = " << z << endl;   
+    cout << "x_polar = " << x_ploar << endl;   
+    cout << "error_y = " << error_y << endl;   
+    cout << "H_ = " << H_ << endl;
+    cout << "S = " << S << endl;
+    cout << "K = " << K << endl;
+  }
+
 }
