@@ -39,12 +39,22 @@ void KalmanFilter::Update(const VectorXd &z) {
   /**
    * TODO: update the state by using Kalman Filter equations
    */
+  int debug = 1;
+
   VectorXd error_y = z - H_*x_;
   MatrixXd S = H_*P_*H_.transpose() + R_;
   MatrixXd K = P_*H_.transpose()*S.inverse(); // Kalman gain
 
+
   x_ = x_ +  K*error_y;
   P_ = ( MatrixXd::Identity(4, 4) - K*H_ )*P_;
+
+  if (debug){
+  cout << "error_y = " << error_y << endl;   
+  cout << "H_ = " << H_ << endl;
+  cout << "S = " << S << endl;
+  cout << "K = " << K << endl;
+  }
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
@@ -53,13 +63,50 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
    */
                                                   
   //_cout << "UpdateEKF: " << endl;
+  int debug = 1;
 
   // Use Jacobian in the linearization of h(x')
-  VectorXd error_y = z - H_*x_;
-  //_cout << "Done updating EKF " << endl;
+  // convert to polar space (might be added as a method under Tools class)
+  float px = x_(0);
+  float py = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
+
+  float rho = sqrt( px*px + py*py );
+  float phi = atan2(py, px);
+  if (fabs(px) < 0.001){
+    cout << "Watch out px is Null" << endl;
+  }
+
+  float rho_dot = (px*vx + py*vy)/rho;
+
+  while (phi > 2*M_PI){
+    phi -= 2*M_PI;
+  }
+  while ( phi < -2*M_PI){
+    phi += 2*M_PI;
+  }
+
+  VectorXd x_ploar(3);
+  x_ploar << rho, phi, rho_dot;
+
+  VectorXd error_y = z - x_ploar;
+
+
+  //cout << "Done updating EKF " << endl;
 
   MatrixXd S = H_*P_*H_.transpose() + R_;
   MatrixXd K = P_*H_.transpose()*S.inverse(); // Kalman gain
+
+
+  if (debug){
+  cout << "z = " << z << endl;   
+  cout << "x_polar = " << x_ploar << endl;   
+  cout << "error_y = " << error_y << endl;   
+  cout << "H_ = " << H_ << endl;
+  cout << "S = " << S << endl;
+  cout << "K = " << K << endl;
+  }
 
   x_ = x_ +  K*error_y;
   P_ = ( MatrixXd::Identity(4, 4) - K*H_ )*P_;

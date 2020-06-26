@@ -98,6 +98,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
     // done initializing, no need to predict or update
     is_initialized_ = true;
+    cout << "Initialization DONE" << endl;
     return;
   }
 
@@ -156,7 +157,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.H_ = Hj_;
     ekf_.R_ = R_radar_;
 
-    //_ cout << "Radar Update: " << endl;
+    cout << "Radar Update: " << endl;
 
     ekf_.UpdateEKF( measurement_pack.raw_measurements_ );
 
@@ -166,7 +167,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.H_ = H_laser_;
     ekf_.R_ = R_laser_;
 
-    //_ cout << "Lidar Update: " << endl;
+    cout << "Lidar Update: " << endl;
 
     ekf_.Update( measurement_pack.raw_measurements_ );
 
