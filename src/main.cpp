@@ -140,6 +140,11 @@ int main() {
           // std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
 
+          if ( RMSE(1)  >= 0.5){
+            std::cout << " ########################### The (py) RMSE is way off here ####################### " << std::endl;
+            return 0;
+          } 
+
         }  // end "telemetry" if
 
       } else {

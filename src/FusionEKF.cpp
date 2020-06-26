@@ -120,12 +120,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   // Update the state transition matrix F
   float dt = ( measurement_pack.timestamp_ - previous_timestamp_ ) / 1000000.0; // converted it to seconds
-  cout << "previous_timestamp_ = " << previous_timestamp_ << endl;
+  //_cout << "previous_timestamp_ = " << previous_timestamp_ << endl;
   ekf_.F_(0, 2) = dt;
   ekf_.F_(1, 3) = dt;
   //_ update previous timestamp
   previous_timestamp_ = measurement_pack.timestamp_;
   //cout << "dt = " << dt << endl; 
+
   // Update the process noise covariance matrix Q
   MatrixXd G = MatrixXd(4, 2);
   MatrixXd a = MatrixXd(2, 2);
@@ -166,7 +167,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.R_ = R_radar_;
 
     //cout << "Radar Update: " << endl;
-
     ekf_.UpdateEKF( measurement_pack.raw_measurements_ );
 
   } else {
@@ -181,7 +181,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   }
 
-  int print_output = 0;
+  int print_output = 1;
   // print the output
   if (print_output){
   cout << "x_ = " << ekf_.x_ << endl;
