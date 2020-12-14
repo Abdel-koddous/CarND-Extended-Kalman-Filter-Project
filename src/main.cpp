@@ -9,6 +9,9 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::string;
 using std::vector;
+using std::cout;
+using std::endl;
+
 
 // for convenience
 using json = nlohmann::json;
@@ -32,6 +35,20 @@ string hasData(string s) {
 int main() {
   uWS::Hub h;
 
+  cout << "Choose Sensor type used in the tracking, hit R for Radar, L for Lidar and Enter for both" << std::endl;
+  string used_sensor;
+  std::cin >> used_sensor;
+  if( used_sensor == "R" or used_sensor == "r") {
+    cout << "Only Radar data will be used in the tracking" << endl;
+    used_sensor = "R"; // Radar
+  } else if( used_sensor == "L" or used_sensor == "l") {
+    cout << "Only Lidar data will be used in the tracking" << endl;
+    used_sensor = "L"; // Lidar
+  } else {
+    cout << "Both Lidar and Radar data will be used in the tracking" << endl;
+    used_sensor = "A"; // All
+  }
+
   // Create a Kalman Filter instance
   FusionEKF fusionEKF;
 
@@ -40,7 +57,7 @@ int main() {
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
-  h.onMessage([&fusionEKF,&tools,&estimations,&ground_truth]
+  h.onMessage([&fusionEKF,&tools,&estimations,&ground_truth,&used_sensor]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, 
                uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -90,7 +107,6 @@ int main() {
             iss >> timestamp;
             meas_package.timestamp_ = timestamp;
           }
-
           float x_gt;
           float y_gt;
           float vx_gt;
@@ -107,9 +123,13 @@ int main() {
           gt_values(3) = vy_gt;
           ground_truth.push_back(gt_values);
           
-          // Call ProcessMeasurement(meas_package) for Kalman filter
 
-          fusionEKF.ProcessMeasurement(meas_package);       
+          // Call ProcessMeasurement(meas_package) for Kalman filter
+          if ( (used_sensor == "A")  || (sensor_type.compare(used_sensor) == 0) ) { // Process measurement from used sensor only
+            fusionEKF.ProcessMeasurement(meas_package);
+          }
+
+
           // Push the current estimated x,y positon from the Kalman filter's 
           //   state vector
 
@@ -120,12 +140,14 @@ int main() {
           double v1  = fusionEKF.ekf_.x_(2);
           double v2 = fusionEKF.ekf_.x_(3);
 
+
           estimate(0) = p_x;
           estimate(1) = p_y;
           estimate(2) = v1;
           estimate(3) = v2;
         
           estimations.push_back(estimate);
+
 
           VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
 

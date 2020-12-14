@@ -46,7 +46,11 @@ FusionEKF::FusionEKF() {
             0, 1, 0, 1,
             0, 0, 1, 0,
             0, 0, 0, 1;
-  
+
+    // initial state vector
+    ekf_.x_ = VectorXd(4);
+    ekf_.x_ << 0, 0, 0, 0;
+
   // debug information
   ekf_.debug_ = 0;
 
