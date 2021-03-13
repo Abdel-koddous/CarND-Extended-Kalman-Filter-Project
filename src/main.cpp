@@ -35,7 +35,7 @@ string hasData(string s) {
 int main() {
   uWS::Hub h;
 
-  cout << "Choose Sensor type used in the tracking, hit R for Radar, L for Lidar and Enter for both" << std::endl;
+  cout << "Choose Sensor type used in the tracking, hit R for Radar, L for Lidar and B for both" << std::endl;
   string used_sensor;
   std::cin >> used_sensor;
   if( used_sensor == "R" or used_sensor == "r") {
@@ -46,7 +46,7 @@ int main() {
     used_sensor = "L"; // Lidar
   } else {
     cout << "Both Lidar and Radar data will be used in the tracking" << endl;
-    used_sensor = "A"; // All
+    used_sensor = "B"; // All
   }
 
   // Create a Kalman Filter instance
@@ -125,7 +125,7 @@ int main() {
           
 
           // Call ProcessMeasurement(meas_package) for Kalman filter
-          if ( (used_sensor == "A")  || (sensor_type.compare(used_sensor) == 0) ) { // Process measurement from used sensor only
+          if ( (used_sensor == "B")  || (sensor_type.compare(used_sensor) == 0) ) { // Process measurement from used sensor only
             fusionEKF.ProcessMeasurement(meas_package);
           }
 
